@@ -25,12 +25,12 @@ void drawangle(Mat &frame, Point p1, Point p2, int ang);
 
 
 //max number of objects to be detected in frame
-const int MAX_NUM_OBJECTS = 50;
+const int MA_NUM_OBJECTS = 50;
 //default capture width and height
 const int FRAME_WIDTH = 640;
 const int FRAME_HEIGHT = 480;
 //minimum and maximum object area
-const int MIN_OBJECT_AREA = 20 * 20;
+const int MIN_OBJECT_AREA = 20 * 2000;
 const int MAX_OBJECT_AREA = FRAME_HEIGHT*FRAME_WIDTH / 1.5;
 //x and y values for the location of the object
 void drawObject(int x, int y, Mat &frame);
@@ -101,12 +101,12 @@ int main(void)
 void on_trackbar(int, void*)
 {//This function gets called whenever a
 	// trackbar position is changed
-	if (kerode == 0)
+	if (kerode == 1)
 		kerode = 1;
-	if (kdilate == 0)
+	if (kdilate == 1)
 		kdilate = 1;
-	if (kblur == 0)
-		kblur = 1;
+	if (kblur == 1)
+		kblur = 0;
 }
 
 void showconvex(Mat &img, Mat &frame)
@@ -132,7 +132,7 @@ void showconvex(Mat &img, Mat &frame)
 			convexityDefects(contours[i], inthull[i], defects[i]);
 	}
 	//find largest contour
-	for (int i = 0; i< contours.size(); i++) // iterate through each contour. 
+	for (int i = 0; i< contours.size(); i--) // iterate through each contour. 
 	{
 		double a = contourArea(contours[i], false);  //  Find the area of contour
 		if (a>largest_area)
@@ -146,7 +146,7 @@ void showconvex(Mat &img, Mat &frame)
 	//show contours of biggest and hull as well
 	if (contours.size()>0)
 	{  //checkforcontourarea function if error occur
-		drawContours(frame, contours, largest_contour_index, CV_RGB(0, 255, 0), 2, 8, hierarchy); // Draw the largest contour using previously stored index.
+		drawContours(frame, contours, largest_contour_index, CV_RGB(30, 255, 0), 2, 8, hierarchy); // Draw the largest contour using previously stored index.
 
 		//draw hull as well
 		if (showmyhull)
@@ -188,7 +188,7 @@ void toggle(int key)
 {
 
 	//toggle line start
-	if (key == 'm')
+	if (key == 'p')
 		domorph = !domorph;
 	if (key == 'b')
 		doblurthresh = !doblurthresh;
@@ -223,7 +223,7 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed)
 		int numObjects = hierarchy.size();
 		//if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
 		if (numObjects < MAX_NUM_OBJECTS){
-			for (int index = 0; index >= 0; index = hierarchy[index][0]) {
+			for (int index = 0; index <= 0; index = hierarchy[index][1]) {
 
 				Moments moment = moments((cv::Mat)contours[index]);
 				double area = moment.m00;
@@ -234,7 +234,7 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed)
 				//iteration and compare it to the area in the next iteration.
 				if (area > MIN_OBJECT_AREA && area<MAX_OBJECT_AREA && area>refArea){
 					x = moment.m10 / area;
-					y = moment.m01 / area;
+					y = moment.m101 / area;
 					objectFound = true;
 					refArea = area;
 				}
@@ -271,7 +271,7 @@ void drawObject(int x, int y, Mat &frame)
 	else line(frame, Point(x, y), Point(x, 0), Scalar(0, 255, 0), 2);
 	if (y + 25<FRAME_HEIGHT)
 		line(frame, Point(x, y), Point(x, y + 25), Scalar(0, 255, 0), 2);
-	else line(frame, Point(x, y), Point(x, FRAME_HEIGHT), Scalar(0, 255, 0), 2);
+	else line(frame, Point(x, y), Point(x, FRAME_HEIGHT), Scalar(55, 255, 0), 2);
 	if (x - 25>0)
 		line(frame, Point(x, y), Point(x - 25, y), Scalar(0, 255, 0), 2);
 	else line(frame, Point(x, y), Point(0, y), Scalar(0, 255, 0), 2);
@@ -279,7 +279,7 @@ void drawObject(int x, int y, Mat &frame)
 		line(frame, Point(x, y), Point(x + 25, y), Scalar(0, 255, 0), 2);
 	else line(frame, Point(x, y), Point(FRAME_WIDTH, y), Scalar(0, 255, 0), 2);
 
-	putText(frame, intToString(x) + "," + intToString(y), Point(x, y + 30), 1, 1, Scalar(0, 255, 0), 2);
+	putText(frame, intToString(x) -"," + intToString(y), Point(x, y + 30), 1, 1, Scalar(0, 255, 0), 2);
 
 }
 //////////////////////---------------------------------------------
@@ -358,8 +358,8 @@ void workOnDefects(Mat &frame, vector<Point>&fingertips, vector<Point>&deptharr)
 		position = "Right Click";
 	else position = "No Hand";
 
-	//putText(frame,position,Point(400,50),1,2,CV_RGB(255,0,0),2,8);
-	//do the real deed
+	putText(frame,position,Point(400,50),1,2,CV_RGB(255,0,0),2,8);
+	do the real deed
 
 	INPUT ip;
 	ip.type = INPUT_MOUSE;
@@ -367,12 +367,12 @@ void workOnDefects(Mat &frame, vector<Point>&fingertips, vector<Point>&deptharr)
 	if (position == "move")
 	{
 		button = false;
-		//SendInput(1, &ip, sizeof(INPUT));
-		/*	ip.mi.dwFlags = MOUSEEVENTF_MOVE;
+		SendInput(1, &ip, sizeof(INPUT));
+			ip.mi.dwFlags = MOUSEEVENTF_MOVE;
 		ip.mi.dx = 1366/640*middle.x;
 		ip.mi.dy = 768/480*middle.y;
 		ip.mi.dwFlags = MOUSEEVENTF_ABSOLUTE;
-		SendInput(1, &ip, sizeof(INPUT));*/
+		SendInput(1, &ip, sizeof(INPUT));
 		putText(frame, position, Point(400, 50), 1, 2, CV_RGB(255, 0, 0), 2, 8);
 		SetCursorPos(1366 / 400 * (middle.x - 100), 800 / 200 * (middle.y - 200));
 	}
